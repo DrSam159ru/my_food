@@ -60,9 +60,10 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
+          password: ${{ secrets.SSH_PASSWORD }}
           script: |
             set -e
-            cd ${{ secrets.SSH_USER }}/foodgram
+            cd /home/${{ secrets.SSH_USER }}/foodgram
             
             echo "=== Проверка файлов на сервере ==="
             ls -la infra/
@@ -162,4 +163,4 @@ jobs:
             Автор: ${{ github.actor }}
             Коммит: ${{ github.event.head_commit.message }}
             
-            🚀 Готов к использованию!!!
+            🚀 Готов к использованию!
