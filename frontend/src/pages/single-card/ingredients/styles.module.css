@@ -1,0 +1,120 @@
+.ingredientsCard {
+  --surface: #0f1115;
+  --ink: #e7eaf0;
+  --muted: #9aa3af;
+  --accent: #ff7043;
+  --radius: 20px;
+
+  position: relative;
+  margin: 28px 0 60px;
+  padding: 24px 22px 20px;
+  border-radius: var(--radius);
+  background:
+    radial-gradient(900px 180px at 8% -40%, rgba(255,255,255,0.05), rgba(255,255,255,0)) no-repeat,
+    linear-gradient(180deg, rgba(21,24,31,0.92), rgba(21,24,31,0.96)),
+    var(--surface);
+  box-shadow:
+    0 14px 36px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+/* Блик-«глянец» */
+.ingredientsCard::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  left: -12%;
+  width: 65%;
+  height: 120%;
+  transform: rotate(8deg);
+  background: linear-gradient(90deg, rgba(255,255,255,0.14), rgba(255,255,255,0));
+  filter: blur(22px);
+  pointer-events: none;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.title {
+  margin: 0;
+  font-family: "SF Pro Display", system-ui, -apple-system, sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.decor {
+  flex: 1;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent 60%);
+  opacity: 0.9;
+}
+
+/* Список — аккуратный, читаемый, с «точкой-разделителем» */
+.list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: baseline;
+  gap: 10px 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.02);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.03) inset,
+    0 0 0 1px rgba(255,255,255,0.04) inset;
+}
+
+.itemName {
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.45;
+  letter-spacing: 0.1px;
+  word-break: break-word;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 6px;
+  background: var(--accent);
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.itemAmount {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+
+/* Адаптация */
+@media (max-width: 730px) {
+  .ingredientsCard {
+    margin: 22px 0 40px;
+    padding: 20px 16px 16px;
+    border-radius: 16px;
+  }
+  .title { font-size: 18px; }
+  .item { padding: 10px; }
+  .itemName { font-size: 15px; }
+  .itemAmount { font-size: 14px; }
+}

@@ -1,0 +1,149 @@
+.description {
+  --surface: #ffffff;
+  --ink: #121212;
+  --muted: #6b7280;
+  --accent: #ff7043; /* теплый акцент под еду */
+  --radius: 20px;
+
+  position: relative;
+  max-width: 880px;
+  margin: 28px auto 0;
+  padding: 28px 28px 24px;
+  border-radius: var(--radius);
+  background:
+    radial-gradient(1200px 220px at 10% -40%, rgba(255,255,255,0.85), rgba(255,255,255,0)) no-repeat,
+    linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.92)),
+    var(--surface);
+  box-shadow:
+    0 12px 30px rgba(17, 17, 17, 0.10),
+    inset 0 0 0 1px rgba(17, 17, 17, 0.04);
+  overflow: hidden;
+}
+
+/* Блик для «глянца» */
+.description::before {
+  content: "";
+  position: absolute;
+  top: -30%;
+  left: -10%;
+  width: 60%;
+  height: 120%;
+  transform: rotate(8deg);
+  background: linear-gradient(90deg, rgba(255,255,255,0.45), rgba(255,255,255,0));
+  filter: blur(18px);
+  pointer-events: none;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--ink);
+  text-transform: uppercase;
+}
+
+.decor {
+  flex: 1;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent 60%);
+  opacity: 0.6;
+}
+
+/* Контент: ровные края, переносы по слогам, хорошая читаемость */
+.content {
+  /* ключ: выравнивание по ширине */
+  text-align: justify;
+  text-justify: inter-word;
+
+  /* переносы слов (для ru важно, чтобы lang="ru" был на html/body) */
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
+
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.75;
+  letter-spacing: 0.1px;
+  margin-top: 8px;
+}
+
+/* Абзацы с аккуратной типографикой */
+.paragraph {
+  margin: 0 0 14px;
+}
+
+/* Лёгкая «красная строка» со 2-го абзаца для журнального ощущения */
+.paragraph + .paragraph {
+  text-indent: 1.25em;
+}
+
+/* Буквица */
+.dropcap {
+  float: left;
+  font-weight: 800;
+  font-size: 3.1rem;
+  line-height: 0.85;
+  margin: 6px 12px 0 2px;
+  color: var(--accent);
+  text-shadow:
+    0 2px 8px rgba(255, 112, 67, 0.25),
+    0 1px 0 rgba(255,255,255,0.7);
+}
+
+/* Тонкая адаптация под маленькие экраны */
+@media (max-width: 680px) {
+  .description {
+    margin: 20px 12px 0;
+    padding: 22px 18px 18px;
+    border-radius: 16px;
+  }
+  .title {
+    font-size: 18px;
+  }
+  .content {
+    font-size: 16px;
+    line-height: 1.7;
+  }
+  .dropcap {
+    font-size: 2.4rem;
+    margin: 4px 10px 0 1px;
+  }
+}
+
+/* Автоматический тёмный режим (глянец сохраняем, но делаем темнее) */
+@media (prefers-color-scheme: dark) {
+  .description {
+    --surface: #0f1115;
+    --ink: #e7eaf0;
+    --muted: #9aa3af;
+    background:
+      radial-gradient(1200px 220px at 10% -40%, rgba(255,255,255,0.04), rgba(255,255,255,0)) no-repeat,
+      linear-gradient(180deg, rgba(21,24,31,0.92), rgba(21,24,31,0.96)),
+      var(--surface);
+    box-shadow:
+      0 14px 36px rgba(0, 0, 0, 0.45),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  }
+  .description::before {
+    background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(255,255,255,0));
+    filter: blur(22px);
+  }
+  .decor {
+    opacity: 0.9;
+  }
+  .dropcap {
+    text-shadow:
+      0 2px 12px rgba(255, 112, 67, 0.35),
+      0 1px 0 rgba(255,255,255,0.12);
+  }
+}

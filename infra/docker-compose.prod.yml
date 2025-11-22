@@ -1,0 +1,90 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    env_file:
+      - ../.env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB} -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  backend:
+    image: ${DOCKER_USERNAME}/foodgram-backend:latest
+    restart: always
+    env_file:
+      - ../.env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - media_data:/app/media
+      - backend_static:/app/static
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s = socket.socket(); s.connect(('localhost', 8000)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  frontend:
+    image: ${DOCKER_USERNAME}/foodgram-frontend:latest
+    restart: "no"
+    env_file:
+      - ../.env
+    volumes:
+      - frontend_static:/var/www/static
+
+  nginx:
+    image: ${DOCKER_USERNAME}/foodgram-nginx:latest
+    restart: always
+    env_file:
+      - ../.env
+    depends_on:
+      - backend
+      - frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - frontend_static:/var/www/static:ro
+      - backend_static:/backend_static:ro
+      - media_data:/var/www/media
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot
+      - ../docs:/var/www/docs:ro
+
+  certbot:
+    image: certbot/certbot
+    restart: "no"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: ""
+    command: |
+      sh -c '
+        echo "Ожидаем запуска nginx..."
+        sleep 10
+        certbot certonly --webroot -w /var/www/certbot \
+          -d food-gram.hopto.org \
+          --email dr.sam159ru@yandex.ru \
+          --agree-tos \
+          --non-interactive \
+          --force-renewal
+      '
+
+volumes:
+  pg_data:
+  frontend_static:
+  backend_static:
+  media_data:
+  certbot_www:
