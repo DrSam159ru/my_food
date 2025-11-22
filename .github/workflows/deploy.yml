@@ -50,97 +50,50 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
           source: "infra/"
-          target: "/${{ secrets.SSH_USER }}/foodgram"
+          target: "/root/foodgram"
+          overwrite: true
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
+          username: root
           password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
           script: |
             set -e
-            cd /home/${{ secrets.SSH_USER }}/foodgram
+            cd /root/foodgram
             
             echo "=== Проверка файлов на сервере ==="
-            ls -la infra/
-            ls -la infra/nginx/
+            ls -la
+            ls -la infra/ || echo "Папка infra не найдена"
             echo "✅ Файлы конфигурации на месте"
             
             echo "=== Остановка старых контейнеров ==="
-            docker compose -f infra/docker-compose.prod.yml down || true
+            docker compose -f docker-compose.prod.yml down || true
             echo "✅ Старые контейнеры остановлены"
             
-            echo "=== Очистка volumes статики (кроме БД и медиа) ==="
-            docker volume rm infra_frontend_static infra_backend_static 2>/dev/null || true
-            echo "✅ Volumes статики очищены (media не трогаем)"
-            
             echo "=== Загрузка свежих образов из Docker Hub ==="
-            docker compose -f infra/docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml pull
             echo "✅ Свежие образы загружены"
             
             echo "=== Запуск новых контейнеров ==="
-            docker compose -f infra/docker-compose.prod.yml up -d
+            docker compose -f docker-compose.prod.yml up -d
             echo "✅ Контейнеры запущены"
 
-            echo "=== Ожидание запуска сервисов (40 сек) ==="
-            sleep 40
+            echo "=== Ожидание запуска сервисов (30 сек) ==="
+            sleep 30
             
             echo "=== Проверка здоровья контейнеров ==="
-            docker compose -f infra/docker-compose.prod.yml ps
-            echo "✅ Контейнеры запущены"
+            docker compose -f docker-compose.prod.yml ps
             
-            echo "=== Проверка статики фронтенда (через nginx-контейнер) ==="
-            docker exec infra-nginx-1 ls -la /var/www/static/ > /dev/null 2>&1 && echo "✅ Статика фронтенда на месте" || echo "⚠️ Статика фронтенда не смонтирована"
+            echo "=== Проверка работы приложения ==="
+            curl -f http://localhost/ || echo "Приложение еще не готово"
             
-            echo "=== Проверка статики бэкенда ==="
-            docker exec infra-backend-1 ls -la /app/static/ > /dev/null 2>&1 && echo "✅ Статика бэкенда на месте" || echo "⚠️ Статика бэкенда не готова"
-            
-            echo "=== Проверка медиа папок ==="
-            docker exec infra-backend-1 ls -la /app/media/ > /dev/null 2>&1 && echo "✅ Медиа папка в бэкенде создана" || echo "⚠️ Медиа папка в бэкенде не создана"
-            docker exec infra-nginx-1 ls -la /var/www/media/ > /dev/null 2>&1 && echo "✅ Медиа папка в nginx создана" || echo "⚠️ Медиа папка в nginx не создана"
-            
-            echo "=== Проверка доступности сайта через nginx ==="
-            if curl -f http://localhost/ > /dev/null 2>&1; then
-              echo "✅ Главная страница доступна"
-            else
-              echo "❌ Главная страница не доступна"
-            fi
-            
-            echo "=== Проверка API через nginx ==="
-            if curl -f http://localhost/api/ > /dev/null 2>&1; then
-              echo "✅ API доступен"
-            else
-              echo "❌ API не доступен"
-            fi
-            
-            echo "=== Проверка медиа маршрута ==="
-            if curl -I http://localhost/media/ 2>/dev/null | head -n 1 | grep -qE "200|301|302"; then
-              echo "✅ Медиа маршрут отвечает"
-            else
-              echo "⚠️ Медиа маршрут может быть недоступен"
-            fi
-            
-            echo "=== Создание тестовой структуры медиа папок (если нужно) ==="
-            docker exec infra-backend-1 mkdir -p /app/media/recipes/1 /app/media/recipes/2 /app/media/avatars/1 || echo "Медиа папки уже существуют"
-            docker exec infra-nginx-1 mkdir -p /var/www/media/recipes/1 /var/www/media/recipes/2 /var/www/media/avatars/1 || echo "Медиа папки уже существуют"
-            
-            echo "=== Проверка прав доступа к медиа ==="
-            docker exec infra-backend-1 chmod 755 /app/media/ /app/media/recipes/ /app/media/avatars/ 2>/dev/null || true
-            docker exec infra-nginx-1 chmod 755 /var/www/media/ /var/www/media/recipes/ /var/www/media/avatars/ 2>/dev/null || true
-            echo "✅ Права доступа к медиа папкам установлены"
-            
-            echo "=== Финальная проверка контейнеров ==="
-            docker compose -f infra/docker-compose.prod.yml ps
-            
-            echo ""
-            echo "🎉 🚀 ДЕПЛОЙ УСПЕШНО ЗАВЕРШЕН!"
-            echo "📱 Сайт доступен: http://food-gram.hopto.org"
-            echo "💾 Медиафайлы настроены и сохраняются между деплоями"
-            echo "⚡ Статика работает корректно"
+            echo "🎉 Деплой завершен! Сайт: http://food-gram.hopto.org"
 
       - name: Telegram notify
         uses: appleboy/telegram-action@master
@@ -150,17 +103,10 @@ jobs:
           message: |
             🎉 Foodgram: полный деплой завершен!
             
-            📊 Статус:
-            ✅ Сайт: http://food-gram.hopto.org
-            ✅ Статика: CSS/JS файлы
-            ✅ API: бэкенд доступен  
-            ✅ Медиа: загрузка картинок (сохраняются между деплоями)
-            ✅ База данных: работает
-            
-            📝 Детали:
-            Репозиторий: ${{ github.repository }}
-            Ветка: ${{ github.ref_name }}
-            Автор: ${{ github.actor }}
-            Коммит: ${{ github.event.head_commit.message }}
+            📊 Статус: Успешно
+            🌐 Сайт: http://food-gram.hopto.org
+            📝 Репозиторий: ${{ github.repository }}
+            🎯 Ветка: ${{ github.ref_name }}
+            👤 Автор: ${{ github.actor }}
             
             🚀 Готов к использованию!
