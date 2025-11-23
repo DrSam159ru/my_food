@@ -62,7 +62,6 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: root
           password: ${{ secrets.SSH_PASSWORD }}
-          port: 22
           script: |
             set -e
             cd /root/foodgram

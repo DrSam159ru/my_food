@@ -3,7 +3,7 @@ services:
     image: postgres:15
     restart: always
     env_file:
-      - ../.env
+      - .env
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -21,7 +21,7 @@ services:
     image: ${DOCKER_USERNAME}/foodgram-backend:latest
     restart: always
     env_file:
-      - ../.env
+      - .env
     depends_on:
       db:
         condition: service_healthy
@@ -39,7 +39,7 @@ services:
     image: ${DOCKER_USERNAME}/foodgram-frontend:latest
     restart: "no"
     env_file:
-      - ../.env
+      - .env
     volumes:
       - frontend_static:/var/www/static
 
@@ -47,7 +47,7 @@ services:
     image: ${DOCKER_USERNAME}/foodgram-nginx:latest
     restart: always
     env_file:
-      - ../.env
+      - .env
     depends_on:
       - backend
       - frontend
@@ -61,7 +61,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - certbot_www:/var/www/certbot
-      - ../docs:/var/www/docs:ro
+      - ./docs:/var/www/docs:ro
 
   certbot:
     image: certbot/certbot
